@@ -14,25 +14,25 @@ node ()
                 }
         stage ('Build') 
                 {
-        sh """
-        scp /var/lib/jenkins/workspace/pipeline_job/pipeline_dop@script/static-site/helloWorld.html sneg061@10.0.5.9:/var/www/sitejenkins3
-        """
-        sh """
-ssh sneg061@10.0.5.9 << EOF
-        pwd
-        whoami
-        if
-        netstat -lntup | grep ":$PORT"
-        then
-        echo "Port not empty"
-        exit
-        else
-        sed -i 's/^<VirtualHost.*/<VirtualHost *:'$PORT'>/' /etc/apache2/sites-available/dopjenkins.conf
-        sed -i 's/^Listen.*/Listen '$PORT'/' /etc/apache2/sites-available/dopjenkins.conf
-        fi
-        sudo systemctl restart apache2
+                sh """
+                scp /var/lib/jenkins/workspace/pipeline_job/pipeline_dop@script/static-site/helloWorld.html sneg061@10.0.5.9:/var/www/sitejenkins3
+                """
+                sh """
+                ssh sneg061@10.0.5.9 << EOF
+                pwd
+                whoami
+                if
+                netstat -lntup | grep ":$PORT"
+                then
+                echo "Port not empty"
+                exit
+                else
+                sed -i 's/^<VirtualHost.*/<VirtualHost *:'$PORT'>/' /etc/apache2/sites-available/dopjenkins.conf
+                sed -i 's/^Listen.*/Listen '$PORT'/' /etc/apache2/sites-available/dopjenkins.conf
+                fi
+                sudo systemctl restart apache2
 EOF
-        """
+                """
                 }
         }
 }
