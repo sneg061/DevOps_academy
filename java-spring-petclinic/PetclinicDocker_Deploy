@@ -1,0 +1,100 @@
+pipeline {
+  agent any
+  parameters {
+    choice(name: 'VM', choices: ['dev', 'train'])
+    extendedChoice(
+    name: 'BUILD',
+    description: 'Build version',
+    multiSelectDelimiter: ',',
+    visibleItemCount: 5,
+    quoteValue: false,
+    type: 'PT_SINGLE_SELECT',
+    propertyFile: "/var/www/petclinic/BUILD_DOCKER",
+    propertyKey: "version")
+  }
+
+    stages {
+        stage('User_to_Dev') {
+            when { 
+                allOf {
+                    triggeredBy cause: "UserIdCause"
+                    environment name: 'VM', value: 'dev' 
+                }
+            }
+            steps {
+                sh '''
+                if [ "$VM" = "dev" ]; then
+                ssh sneg061@10.0.5.9 << EOF
+                docker rm -fv $(docker ps -aq)
+                docker pull academydevops.azurecr.io/ps/petclinic:${BUILD}
+                docker run -d -p 8080:8080 academydevops.azurecr.io/ps/petclinic:${BUILD}
+                exit
+EOF
+                fi
+                '''
+            }
+        }
+
+        stage('User_to_train') {
+            when { 
+                allOf {
+                    triggeredBy cause: "UserIdCause"
+                    environment name: 'VM', value: 'train' 
+                }
+            }
+            steps {
+                sh '''
+                if [ "$VM" = "train" ]; then
+                ssh sneg061@10.0.5.18 << EOF
+                docker rm -fv $(docker ps -aq)
+                docker pull academydevops.azurecr.io/ps/petclinic:${BUILD}
+                docker run -d -p 8080:8080 academydevops.azurecr.io/ps/petclinic:${BUILD}
+                exit
+EOF
+                fi
+                '''
+            }
+        }
+    
+        stage('autoTrig_to_Dev') {
+            when { triggeredBy 'UpstreamCause' }
+                steps {
+                    sh '''
+                    ssh sneg061@10.0.5.9 << EOF
+                    docker stop $(docker ps -a -q)
+                    echo "$Temp"
+                    echo "${Temp}"
+                    echo Temp
+                    echo $Temp
+                    echo "$Temp"
+                    docker pull academydevops.azurecr.io/ps/petclinic:0.0.${Temp}
+                    docker run -d -p 8080:8080 academydevops.azurecr.io/ps/petclinic:0.0.${Temp}
+                    exit
+EOF
+                    '''
+                }
+        }
+        
+        stage ("waiting_60sec") {
+            steps {
+                sleep 60
+            }
+        }
+        
+        stage('Healthcheck'){
+            steps {
+                sh '''
+                ssh sneg061@ps-$VM.westeurope.cloudapp.azure.com << EOF
+                curl -s https://ps-dev.westeurope.cloudapp.azure.com | grep 'Welcome'
+                echo $?
+                if ! [ $? -eq 0 ]; then 
+                echo 'FAILED';
+                else echo 'SUCCESS'; 
+                fi
+                exit
+EOF
+                '''
+            }
+        }
+    }
+}
