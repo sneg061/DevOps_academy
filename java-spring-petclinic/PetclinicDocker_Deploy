@@ -14,65 +14,38 @@ pipeline {
   }
 
     stages {
-        stage('User_to_Dev') {
+        stage('Deploy_to_Dev') {
             when { 
-                allOf {
-                    triggeredBy cause: "UserIdCause"
-                    environment name: 'VM', value: 'dev' 
-                }
+                environment name: 'VM', value: 'dev' 
             }
             steps {
                 sh '''
-                if [ "$VM" = "dev" ]; then
-                ssh sneg061@10.0.5.9 << EOF
-                docker rm -fv $(docker ps -aq)
-                docker pull academydevops.azurecr.io/ps/petclinic:${BUILD}
-                docker run -d -p 8080:8080 academydevops.azurecr.io/ps/petclinic:${BUILD}
-                exit
-EOF
-                fi
-                '''
+                 ssh sneg061@10.0.5.9 << EOF
+                 docker rm ps-petclinic --force
+                 sleep 10
+                 docker pull academydevops.azurecr.io/ps/petclinic:${BUILD}
+                 docker run -d -p 8080:8080 --name ps-petclinic academydevops.azurecr.io/ps/petclinic:${BUILD}
+                 exit
+                 EOF
+                 '''
             }
         }
 
-        stage('User_to_train') {
+        stage('Deploy_to_train') {
             when { 
-                allOf {
-                    triggeredBy cause: "UserIdCause"
                     environment name: 'VM', value: 'train' 
-                }
             }
             steps {
                 sh '''
-                if [ "$VM" = "train" ]; then
-                ssh sneg061@10.0.5.18 << EOF
-                docker rm -fv $(docker ps -aq)
-                docker pull academydevops.azurecr.io/ps/petclinic:${BUILD}
-                docker run -d -p 8080:8080 academydevops.azurecr.io/ps/petclinic:${BUILD}
-                exit
-EOF
-                fi
-                '''
+                 ssh sneg061@10.0.5.18 << EOF
+                 docker rm ps-petclinic --force
+                 sleep 10
+                 docker pull academydevops.azurecr.io/ps/petclinic:${BUILD}
+                 docker run -d -p 8080:8080 --name ps-petclinic academydevops.azurecr.io/ps/petclinic:${BUILD}
+                 exit
+                 EOF
+                 '''
             }
-        }
-    
-        stage('autoTrig_to_Dev') {
-            when { triggeredBy 'UpstreamCause' }
-                steps {
-                    sh '''
-                    ssh sneg061@10.0.5.9 << EOF
-                    docker stop $(docker ps -a -q)
-                    echo "$Temp"
-                    echo "${Temp}"
-                    echo Temp
-                    echo $Temp
-                    echo "$Temp"
-                    docker pull academydevops.azurecr.io/ps/petclinic:0.0.${Temp}
-                    docker run -d -p 8080:8080 academydevops.azurecr.io/ps/petclinic:0.0.${Temp}
-                    exit
-EOF
-                    '''
-                }
         }
         
         stage ("waiting_60sec") {
@@ -81,20 +54,40 @@ EOF
             }
         }
         
-        stage('Healthcheck'){
-            steps {
-                sh '''
-                ssh sneg061@ps-$VM.westeurope.cloudapp.azure.com << EOF
-                curl -s https://ps-dev.westeurope.cloudapp.azure.com | grep 'Welcome'
-                echo $?
-                if ! [ $? -eq 0 ]; then 
-                echo 'FAILED';
-                else echo 'SUCCESS'; 
-                fi
-                exit
-EOF
-                '''
+        stage('Healthcheck_dev'){
+            when { 
+                environment name: 'VM', value: 'dev' 
+            }
+            steps{
+                script{
+                    def commandStdout = sh(returnStdout: true, script: "curl http://ps-dev.westeurope.cloudapp.azure.com:8080 | grep 'Welcome'")
+                    if (commandStdout.contains("Welcome")) {
+                        currentBuild.result = "Success"
+                    }else {
+                        println("The line is not found")
+                        exit 1
+                    }
+                }
             }
         }
-    }
+        
+        stage('Healthcheck_train'){
+            when { 
+                environment name: 'VM', value: 'train' 
+            }
+            steps{
+                script{
+                    def commandStdout = sh(returnStdout: true, script: "curl http://ps-train.westeurope.cloudapp.azure.com:8080 | grep 'Welcome'")
+                    if (commandStdout.contains("Welcome")) {
+                        currentBuild.result = "Success"
+                    }else {
+                        println("The line is not found")
+                        exit 1
+                    }
+                }
+            }
+        }
+    }   
 }
+
+
