@@ -6,3 +6,9 @@ To start application you have to set connection properties for PostgreSQL
 - POSTGRES_DB=your_db_name
 - POSTGRES_USER=your_db_user
 - POSTGRES_PASSWORD=your_db_user_passwd
+
+
+
+
+
+fdgdfgd
