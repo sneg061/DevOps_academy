@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+    triggers {
+        pollSCM('* * * * *')
+    }
+   stages {
+        stage('Docker') {
+            steps {
+                sh '''
+                cd ./kanban-board/kanban-ui
+                docker build . -t academydevops.azurecr.io/ps/kanban-ui:0.0.${BUILD_NUMBER}
+                '''
+            }
+        }
+        stage('Publish') {
+            steps {
+                sh '''
+                docker push academydevops.azurecr.io/ps/kanban-ui:0.0.${BUILD_NUMBER}
+                cd /var/www/petclinic
+                sed -i 's/version=.*/& 0.0.'${BUILD_NUMBER}',/g' BUILD_kanban-ui
+                '''
+            }
+        }
+    }
+    post {
+        success {
+            build wait: false, job: 'deploy_kanban-ui', parameters: [
+                string(name: 'BUILD', value: "0.0.${BUILD_NUMBER}"),
+                string(name: 'VM', value: 'dev')
+            ]
+        }
+    }
+}
