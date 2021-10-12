@@ -16,7 +16,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/kanbans")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "https://ps-{VM}.westeurope.cloudapp.azure.com:4200")
+@CrossOrigin
 public class KanbanController {
 
     private final KanbanService kanbanService;
