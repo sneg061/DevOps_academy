@@ -47,5 +47,25 @@ pipeline {
                  '''
             }
         }
+
+        stage ("waiting_20sec") {
+            steps {
+                sleep 20
+            }
+        }
+        
+        stage('Healthcheck'){
+            steps{
+                script{
+                    try{
+                       sh "curl http://ps-${VM}.westeurope.cloudapp.azure.com:4200 | grep 'Kanban'"
+                        currentBuild.result = "SUCCESS"
+                    }
+                    catch (Exception err){
+                        currentBuild.result ="FAILURE"
+                    }
+                }
+            }
+        }
     }   
 }
