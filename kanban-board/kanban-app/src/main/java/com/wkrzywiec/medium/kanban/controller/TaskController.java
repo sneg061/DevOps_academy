@@ -14,7 +14,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "https://ps-{VM}.westeurope.cloudapp.azure.com:4200")
+@CrossOrigin
 public class TaskController {
 
     private final TaskService taskService;
