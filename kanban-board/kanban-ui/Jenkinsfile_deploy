@@ -24,7 +24,7 @@ pipeline {
                  docker rm kanban-ui --force
                  sleep 10
                  docker pull academydevops.azurecr.io/ps/kanban-ui:${BUILD}
-                 docker run --network kanban -d --name kanban-ui -p 4200:80 academydevops.azurecr.io/ps/petclinic:${BUILD}
+                 docker run --network kanban -d --name kanban-ui -p 4200:80 academydevops.azurecr.io/ps/kanban-ui:${BUILD}
                  exit
                  EOF
                  '''
@@ -41,7 +41,7 @@ pipeline {
                  docker rm kanban-ui --force
                  sleep 10
                  docker pull academydevops.azurecr.io/ps/kanban-ui:${BUILD}
-                 docker run --network kanban -d --name kanban-ui -p 4200:80 academydevops.azurecr.io/ps/petclinic:${BUILD}
+                 docker run --network kanban -d --name kanban-ui -p 4200:80 academydevops.azurecr.io/ps/kanban-ui:${BUILD}
                  exit
                  EOF
                  '''
