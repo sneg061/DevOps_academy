@@ -1,0 +1,47 @@
+pipeline {
+    parameters {
+        choice(
+            choices: ['dev' , 'train'],
+            description: '',
+            name: 'VM')
+        choice(
+            choices: ['start', 'stop'],
+            description: '',
+            name: 'Status')
+    }
+    environment {
+        POSTGRES_CREDENTIALS = credentials('POSTGRES')
+    }
+    agent any
+
+    stages {
+        stage('Starting db') {
+            when {
+                expression { params.Status == 'start'}
+            }
+            steps {
+                sh '''
+                ssh sneg061@ps-$VM.westeurope.cloudapp.azure.com  << EOF
+                docker rm db --force
+                docker run --network kanban -v postgres_volume:/var/lib/postgresql/data --name db -e POSTGRES_USER=$POSTGRES_CREDENTIALS_USR -e POSTGRES_PASSWORD=$POSTGRES_CREDENTIALS_PSW -e POSTGRES_DB=kanban -d -p 5432:5432 postgres:14-alpine
+                exit
+                EOF'''
+          
+            }   
+        }
+        
+        stage('Stoping db') {
+            when {
+                expression { params.Status == 'stop'}
+            }
+            steps {
+                sh '''
+                ssh sneg061@ps-$VM.westeurope.cloudapp.azure.com  << EOF
+                docker rm db --force
+                exit
+                EOF'''
+          
+            }   
+        }  
+    }
+}
