@@ -1,16 +1,13 @@
-FROM maven:3.6.1-jdk-8-slim AS build
-WORKDIR /home/app
-COPY pom.xml .
-COPY src ./src
+FROM maven:3.8.3-jdk-11-slim AS build
+RUN mkdir -p /workspace
+WORKDIR /workspace
+COPY pom.xml /workspace
+COPY src /workspace/src
 RUN mvn -f pom.xml clean package -DskipTests
 
-### STAGE 2: Run ###
-FROM openjdk:8-alpine
-ENV DB_SERVER=kanban-db 
-ENV POSTGRES_DB=kanban-db
-ENV POSTGRES_USER=kanban
-ENV POSTGRES_PASSWORD=kanban
-
+FROM openjdk:8-jre-slim
+COPY --from=build /workspace/target/*.jar app.jar
 EXPOSE 8080
-COPY --from=build /home/app/target/*.jar app.jar
+ENV DB_SERVER=db
+ENV POSTGRES_DB=kanban
 ENTRYPOINT ["java","-jar","app.jar"]
