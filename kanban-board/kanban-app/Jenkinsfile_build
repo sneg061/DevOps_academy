@@ -17,7 +17,7 @@ pipeline {
                 sh '''
                 docker push academydevops.azurecr.io/ps/kanban-app:0.0.${BUILD_NUMBER}
                 cd /var/www/petclinic
-                sed -i 's/version=.*/& 0.0.'${BUILD_NUMBER}',/g' BUILD_kanban-app
+                ./api_app.sh
                 '''
             }
         }
