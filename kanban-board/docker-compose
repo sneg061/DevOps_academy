@@ -2,10 +2,10 @@ version: '3'
 services:
 
   kanban-postgres:
-    image: "postgres:12.2-alpine"
-    container_name: kanban-postgres
+    image: "postgres:14-alpine"
+    container_name: db
     volumes:
-      - kanban-data:/var/lib/postgresql/data
+      - postgres_volume:/var/lib/postgresql/data
     ports:
       - 5432:5432
 
@@ -13,14 +13,14 @@ services:
     build: ./kanban-app
     container_name: kanban-app
     environment:
-      - DB_SERVER=kanban-postgres
+      - DB_SERVER=db
       - POSTGRES_DB=kanban
       - POSTGRES_USER=kanban
       - POSTGRES_PASSWORD=kanban
     ports:
       - 8080:8080
     links:
-      - kanban-postgres
+      - db
 
   kanban-ui:
     build: ./kanban-ui
