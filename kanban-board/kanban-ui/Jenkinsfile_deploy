@@ -9,7 +9,7 @@ pipeline {
     visibleItemCount: 5,
     quoteValue: false,
     type: 'PT_SINGLE_SELECT',
-    propertyFile: "/var/www/petclinic/BUILD_kanban-ui",
+    propertyFile: "/var/www/petclinic/version_ui",
     propertyKey: "version")
   }
 
