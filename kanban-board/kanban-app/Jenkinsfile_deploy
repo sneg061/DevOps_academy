@@ -25,7 +25,7 @@ pipeline {
                 sh '''
                  ssh sneg061@10.0.5.9 << EOF
                  docker rm kanban-app --force
-                 sleep 10
+                 sleep 6
                  docker pull academydevops.azurecr.io/ps/kanban-app:${BUILD}
                  docker run --network kanban -d --name kanban-app -e DB_SERVER=db -e POSTGRES_DB=kanban -e POSTGRES_USER=$POSTGRES_CREDENTIALS_USR -e POSTGRES_PASSWORD=$POSTGRES_CREDENTIALS_PSW -p 8080:8080 academydevops.azurecr.io/ps/kanban-app:${BUILD}
                  exit
@@ -42,9 +42,9 @@ pipeline {
                 sh '''
                  ssh sneg061@10.0.5.18 << EOF
                  docker rm kanban-app --force
-                 sleep 10
+                 sleep 6
                  docker pull academydevops.azurecr.io/ps/kanban-app:${BUILD}
-                 docker run --network kanban -d --name kanban-app -e DB_SERVER=db -e POSTGRES_DB=kanban -e POSTGRES_USER=kanban -e POSTGRES_PASSWORD=kanban -p 8080:8080 academydevops.azurecr.io/ps/kanban-app:${BUILD}
+                 docker run --network kanban -d --name kanban-app -e DB_SERVER=db -e POSTGRES_DB=kanban -e POSTGRES_USER=$POSTGRES_CREDENTIALS_USR -e POSTGRES_PASSWORD=$POSTGRES_CREDENTIALS_PSW -p 8080:8080 academydevops.azurecr.io/ps/kanban-app:${BUILD}
                  exit
                  EOF
                  '''
