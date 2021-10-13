@@ -12,6 +12,9 @@ pipeline {
     propertyFile: "/var/www/petclinic/BUILD_kanban-app",
     propertyKey: "version")
   }
+    environment {
+        POSTGRES_CREDENTIALS = credentials('POSTGRES')
+    }
 
     stages {
         stage('Deploy_to_Dev') {
@@ -24,7 +27,7 @@ pipeline {
                  docker rm kanban-app --force
                  sleep 10
                  docker pull academydevops.azurecr.io/ps/kanban-app:${BUILD}
-                 docker run --network kanban -d --name kanban-app -e DB_SERVER=db -e POSTGRES_DB=kanban -e POSTGRES_USER=kanban -e POSTGRES_PASSWORD=kanban -p 8080:8080 academydevops.azurecr.io/ps/kanban-app:${BUILD}
+                 docker run --network kanban -d --name kanban-app -e DB_SERVER=db -e POSTGRES_DB=kanban -e POSTGRES_USER=$POSTGRES_CREDENTIALS_USR -e POSTGRES_PASSWORD=$POSTGRES_CREDENTIALS_PSW -p 8080:8080 academydevops.azurecr.io/ps/kanban-app:${BUILD}
                  exit
                  EOF
                  '''
